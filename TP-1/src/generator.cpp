@@ -3,13 +3,20 @@
 using namespace std;
 
 void Generator::thread(void) {
-	ensitlm::data_t data = 1;
-	ensitlm::addr_t addr = 1;
-	while (true) {
-		cout << "Enter a number : ";
-		cin >> data;
-		cout << this->name() << " sends : " << std::dec << data << endl;
-		initiator.write(addr, data);
+	ensitlm::data_t data = 0;
+	ensitlm::addr_t addr = 0x10000000;
+	for (ensitlm::data_t i = 0; i < 10; i++) {
+    data = i;
+		cout << name() << ": sends (" << std::hex << data 
+         << ") to address (" << addr << ")" << endl;
+    tlm::tlm_response_status status = initiator.write(addr, data);
+    
+    if (status != tlm::TLM_OK_RESPONSE) {
+      SC_REPORT_ERROR(name(), "bad response status received");
+	    abort();
+    }
+    
+    addr += sizeof(ensitlm::data_t);
 	}
 }
 
