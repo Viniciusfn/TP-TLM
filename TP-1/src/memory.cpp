@@ -6,8 +6,8 @@ tlm::tlm_response_status Memory::write(const ensitlm::addr_t &a,
                                        const ensitlm::data_t &d) {  
   // Checks address validity
   if (a >= size) {
-    SC_REPORT_ERROR(name(), "invalid address!");
-	  abort();
+    SC_REPORT_ERROR(name(), "invalid access!");
+    abort();
   }
   
   // Storing the data
