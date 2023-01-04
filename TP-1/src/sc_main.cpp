@@ -31,7 +31,7 @@ int sc_main(int argc, char **argv) {
 	bus.initiator.bind(rom.socket);
 
 	/* connect display interruption */
-	lcdc.display_intr.bind(g.display_intr);
+	lcdc.display_intr.bind(g.irq_signal);
 
 	/* and start simulation */
 	sc_core::sc_start();

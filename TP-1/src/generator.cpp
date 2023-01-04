@@ -72,7 +72,6 @@ void Generator::thread(void) {
         vram_data1 += (rom_data & (0xF << i)) << (i+4);
         vram_data2 += (rom_data & (0xF << (i+half_data))) >> half_data << (i+4);
       }
-      cout << std::hex << "ROM: " << rom_data << " | VRAM: " << vram_data2 << vram_data1 << endl;
 
       // Write in VRAM
       if (initiator.write(vram_addr, vram_data1) != tlm::TLM_OK_RESPONSE) {
@@ -102,9 +101,26 @@ void Generator::thread(void) {
       abort();
     }
 
+    // Wait for interruptions
+    while(true) {
+      wait(interrupt);
+
+      cout << name() << ": Interruption received!" << endl;
+    }
+
   #endif
+}
+
+void Generator::itr_detector(void) {
+  if(irq_signal) {
+    cout << "Notifying interruption..." << endl;
+    interrupt.notify();
+  }
 }
 
 Generator::Generator(sc_core::sc_module_name name) : sc_core::sc_module(name) {
 	SC_THREAD(thread);
+  sensitive << interrupt;
+  SC_METHOD(itr_detector);
+  sensitive << irq_signal;
 }
