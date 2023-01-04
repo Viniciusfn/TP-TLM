@@ -13,8 +13,7 @@ tlm::tlm_response_status Memory::write(const ensitlm::addr_t &a,
   // Storing the data
   storage[a / sizeof(ensitlm::data_t)] = d;
 
-  cout << name() << ": writes (" << storage[a / sizeof(ensitlm::data_t)] 
-       << ") at address (" << a << ")" << endl;
+  cout << name() << ": WRITE OP : address=" << a << " : data=" << d << endl;
 	return tlm::TLM_OK_RESPONSE;
 }
 
@@ -23,8 +22,7 @@ tlm::tlm_response_status Memory::read(const ensitlm::addr_t &a,
 	// Reading the data from given address
   d = storage[a / sizeof(ensitlm::data_t)];
   
-  cout << name() << ": returns (" << d << ") from address ("
-       << a << ")" << endl;
+  cout << name() << ": READ OP : address=" << a << " : data=" << d << endl;
   return tlm::TLM_OK_RESPONSE;
 }
 

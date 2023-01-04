@@ -1,4 +1,5 @@
 #include "ensitlm.h"
+#include "conf.h"
 
 struct Memory : sc_core::sc_module {
 	ensitlm::target_socket<Memory> target;

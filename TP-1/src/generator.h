@@ -1,4 +1,5 @@
 #include "ensitlm.h"
+#include "conf.h"
 
 struct Generator : sc_core::sc_module {
 	ensitlm::initiator_socket<Generator> initiator;
