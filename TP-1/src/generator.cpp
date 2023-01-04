@@ -49,19 +49,45 @@ void Generator::thread(void) {
   #endif
 
   #ifdef PHASE_2
-    ensitlm::data_t data = 0xFFFFFFFF;
-    ensitlm::addr_t addr = VRAM_ADDR;
+    ensitlm::data_t rom_data;
+    ensitlm::data_t vram_data1;
+    ensitlm::data_t vram_data2;
+    ensitlm::addr_t vram_addr = VRAM_ADDR;
+    ensitlm::addr_t rom_addr = ROM_ADDR;
 
-    // Filling VRAM
-    cout << "Filing VRAM with white image..." << endl;
-    for (long unsigned int i = 0; i < ( MEM_SIZE / sizeof(ensitlm::data_t) ) ; i++) {
-      // Write and check reponse
-      if (initiator.write(addr, data) != tlm::TLM_OK_RESPONSE) {
+    // Reading ROM and filling VRAM
+    cout << "Filing VRAM with image from ROM..." << endl;
+    for (long unsigned int i = 0; i < ( ROM_SIZE / sizeof(ensitlm::data_t) ) ; i++) {
+      // Read from ROM
+      if (initiator.read(rom_addr, rom_data) != tlm::TLM_OK_RESPONSE) {
+        SC_REPORT_ERROR(name(), "bad response status received!");
+        abort();
+      }      
+
+      // Fix data format
+      vram_data1 = 0;
+      vram_data2 = 0;
+      int half_data = sizeof(ensitlm::data_t) * 4; //in bits
+      for (int i = 0; i < half_data; i += 4) {
+        vram_data1 += (rom_data & (0xF << i)) << (i+4);
+        vram_data2 += (rom_data & (0xF << (i+half_data))) >> half_data << (i+4);
+      }
+      cout << std::hex << "ROM: " << rom_data << " | VRAM: " << vram_data2 << vram_data1 << endl;
+
+      // Write in VRAM
+      if (initiator.write(vram_addr, vram_data1) != tlm::TLM_OK_RESPONSE) {
+        SC_REPORT_ERROR(name(), "bad response status received");
+        abort();
+      }
+      vram_addr += sizeof(ensitlm::data_t); // Step to next address
+      if (initiator.write(vram_addr, vram_data2) != tlm::TLM_OK_RESPONSE) {
         SC_REPORT_ERROR(name(), "bad response status received");
         abort();
       }
 
-      addr += sizeof(ensitlm::data_t); //step to next addr
+      // Step to next address
+      vram_addr += sizeof(ensitlm::data_t); 
+      rom_addr  += sizeof(ensitlm::data_t);
     }
 
     // Telling LCD controller the VRAM address
