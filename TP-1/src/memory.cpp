@@ -4,6 +4,12 @@ using namespace std;
 
 tlm::tlm_response_status Memory::write(const ensitlm::addr_t &a,
                                        const ensitlm::data_t &d) {  
+  // Checks address validity
+  if (a >= size) {
+    SC_REPORT_ERROR(name(), "invalid address!");
+	  abort();
+  }
+  
   // Storing the data
   storage[a / sizeof(ensitlm::data_t)] = d;
 
