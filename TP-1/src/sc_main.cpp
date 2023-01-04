@@ -11,12 +11,12 @@ int sc_main(int argc, char **argv) {
 
 	Generator g("Generator 1");
   Bus bus("Bus");
-  Memory m("Memory", 256);
+  Memory m("Memory", 87040);
 
 	LCDC lcdc("LCDC", sc_core::sc_time(1.0 / 25, sc_core::SC_SEC));
 
-	/* mapping memory at addresses [0x10000000, 0x100000FF]*/
-	bus.map(m.target, 0x10000000, 256);
+	/* mapping targets */
+	bus.map(m.target, 0x10000000, 87040);
 	bus.map(lcdc.target_socket, 0x20000000, 12);
 
 	/* connect components to the bus */
