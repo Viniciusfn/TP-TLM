@@ -9,9 +9,8 @@ void Generator::thread(void) {
     data = i;
 		cout << name() << ": sends (" << std::hex << data 
          << ") to address (" << addr << ")" << endl;
-    tlm::tlm_response_status status = initiator.write(addr, data);
     
-    if (status != tlm::TLM_OK_RESPONSE) {
+    if (initiator.write(addr, data) != tlm::TLM_OK_RESPONSE) {
       SC_REPORT_ERROR(name(), "bad response status received");
 	    abort();
     }

@@ -9,7 +9,7 @@ int sc_main(int argc, char **argv) {
 
 	Generator g1("Generator 1");
   Bus bus("Bus");
-  Memory m("Memory");
+  Memory m("Memory", 256);
 
 	/* mapping memory at addresses [0x10000000, 0x100000FF]*/
 	bus.map(m.target, 0x10000000, 256);
