@@ -14,11 +14,11 @@ extern "C" int main();
 extern "C" void interrupt_handler();
 
 extern "C" void hal_write32(uint32_t addr, uint32_t data) {
-	abort(); // TODO
+	NativeWrapper::get_instance()->hal_write32(addr,data);
 }
 
 extern "C" unsigned int hal_read32(uint32_t addr) {
-	abort(); // TODO
+	return NativeWrapper::get_instance()->hal_read32(addr);
 }
 
 extern "C" void hal_cpu_relax() {
@@ -48,12 +48,20 @@ NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
 
 void NativeWrapper::hal_write32(unsigned int addr, unsigned int data)
 {
-	abort(); // TODO
+	ensitlm::addr_t a = addr;
+	ensitlm::data_t d = data;
+	
+	socket.write(a, d);	
 }
 
 unsigned int NativeWrapper::hal_read32(unsigned int addr)
 {
-	abort(); // TODO
+	ensitlm::addr_t a = addr;
+	ensitlm::data_t rvalue;
+
+	socket.read(a, rvalue);
+
+	return (unsigned int)rvalue;
 }
 
 void NativeWrapper::hal_cpu_relax()
