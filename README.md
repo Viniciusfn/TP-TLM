@@ -1,6 +1,7 @@
 TP - TLM (Transiction Level Modeling)
 
-Owner: Vinicius de França
+Members: Vinicius DE FRANÇA NOBREGA
+         Gustavo VILAR DE FARIAS
 
 Grenoble INP - Phelma
 3A SEOC
