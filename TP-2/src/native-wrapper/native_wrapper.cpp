@@ -1,6 +1,8 @@
 #include "ensitlm.h"
 #include "native_wrapper.h"
 
+using namespace std;
+
 /*
  * The C compiler does a bit of magic on the main() function. Trick it
  * by changing the name to something else.
@@ -14,19 +16,21 @@ extern "C" int main();
 extern "C" void interrupt_handler();
 
 extern "C" void hal_write32(uint32_t addr, uint32_t data) {
+	cout << "Writing " << hex << data << " at " << addr << endl;
 	NativeWrapper::get_instance()->hal_write32(addr,data);
 }
 
 extern "C" unsigned int hal_read32(uint32_t addr) {
+	cout << "Reading from " << hex << addr << endl;
 	return NativeWrapper::get_instance()->hal_read32(addr);
 }
 
 extern "C" void hal_cpu_relax() {
-	abort(); // TODO
+	NativeWrapper::get_instance()->hal_cpu_relax();
 }
 
 extern "C" void hal_wait_for_irq() {
-	abort(); // TODO
+	NativeWrapper::get_instance()->hal_wait_for_irq();
 }
 
 /* To keep it simple, the soft wrapper is a singleton, we can
@@ -43,7 +47,13 @@ NativeWrapper * NativeWrapper::get_instance() {
 NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
 							     irq("irq")
 {
-	abort(); // TODO
+	SC_THREAD(compute);
+
+	SC_METHOD(interrupt_handler);
+	sensitive << irq.pos();
+	dont_initialize();
+
+	interrupt = false;
 }
 
 void NativeWrapper::hal_write32(unsigned int addr, unsigned int data)
@@ -71,7 +81,9 @@ void NativeWrapper::hal_cpu_relax()
 
 void NativeWrapper::hal_wait_for_irq()
 {
-	abort(); // TODO
+		if (!interrupt)
+			wait(interrupt_event);
+		interrupt = false;
 }
 
 void NativeWrapper::compute()
@@ -81,5 +93,6 @@ void NativeWrapper::compute()
 
 void NativeWrapper::interrupt_handler_internal()
 {
-	abort(); // TODO
+	interrupt = true;
+	interrupt_event.notify();
 }
