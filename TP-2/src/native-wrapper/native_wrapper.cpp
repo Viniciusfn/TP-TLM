@@ -40,17 +40,21 @@ NativeWrapper * NativeWrapper::get_instance() {
 	return instance;
 }
 
+// Constructor
 NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
 							     irq("irq"), interrupt(false)
 {
+    // We want to continuosly execute compute
     SC_THREAD(compute);
-
+    
+    // We want to execute the interrupt handler once an interruption is received
     SC_METHOD(interrupt_handler_internal);
     sensitive << irq.pos();
 }
 
 void NativeWrapper::hal_write32(unsigned int addr, unsigned int data)
 {
+    // Write with iniciator socket
     socket.write(addr, data);
 }
 
@@ -58,6 +62,7 @@ unsigned int NativeWrapper::hal_read32(unsigned int addr)
 {
     uint32_t data;
 
+    // Read with iniciator socket
     socket.read(addr, data);
 
     return data;
@@ -70,6 +75,7 @@ void NativeWrapper::hal_cpu_relax()
 
 void NativeWrapper::hal_wait_for_irq()
 {
+    // The module waits for the interruption event to be triggered
     if (interrupt == false) {
         wait(interrupt_event);
     }
@@ -84,6 +90,7 @@ void NativeWrapper::compute()
 
 void NativeWrapper::interrupt_handler_internal()
 {
+    // Once the interruption signal is risen, we trigger the interruption event
     if (irq.posedge()){
         interrupt = true;
         interrupt_event.notify();
