@@ -1,8 +1,6 @@
 #include "ensitlm.h"
 #include "native_wrapper.h"
 
-using namespace std;
-
 /*
  * The C compiler does a bit of magic on the main() function. Trick it
  * by changing the name to something else.
@@ -16,21 +14,19 @@ extern "C" int main();
 extern "C" void interrupt_handler();
 
 extern "C" void hal_write32(uint32_t addr, uint32_t data) {
-	cout << "Writing " << hex << data << " at " << addr << endl;
-	NativeWrapper::get_instance()->hal_write32(addr,data);
+    NativeWrapper::get_instance()->hal_write32(addr, data);
 }
 
 extern "C" unsigned int hal_read32(uint32_t addr) {
-	cout << "Reading from " << hex << addr << endl;
-	return NativeWrapper::get_instance()->hal_read32(addr);
+    return NativeWrapper::get_instance()->hal_read32(addr);
 }
 
 extern "C" void hal_cpu_relax() {
-	NativeWrapper::get_instance()->hal_cpu_relax();
+    NativeWrapper::get_instance()->hal_cpu_relax();
 }
 
 extern "C" void hal_wait_for_irq() {
-	NativeWrapper::get_instance()->hal_wait_for_irq();
+    NativeWrapper::get_instance()->hal_wait_for_irq();
 }
 
 /* To keep it simple, the soft wrapper is a singleton, we can
@@ -45,54 +41,53 @@ NativeWrapper * NativeWrapper::get_instance() {
 }
 
 NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
-							     irq("irq")
+							     irq("irq"), interrupt(false)
 {
-	SC_THREAD(compute);
+    SC_THREAD(compute);
 
-	SC_METHOD(interrupt_handler_internal);
-	sensitive << irq.pos();
-	dont_initialize();
-
-	interrupt = false;
+    SC_METHOD(interrupt_handler_internal);
+    sensitive << irq.pos();
 }
 
 void NativeWrapper::hal_write32(unsigned int addr, unsigned int data)
 {
-	ensitlm::addr_t a = addr;
-	ensitlm::data_t d = data;
-	
-	socket.write(a, d);	
+    socket.write(addr, data);
 }
 
 unsigned int NativeWrapper::hal_read32(unsigned int addr)
 {
-	ensitlm::addr_t a = addr;
-	ensitlm::data_t rvalue;
+    uint32_t data;
 
-	socket.read(a, rvalue);
+    socket.read(addr, data);
 
-	return (unsigned int)rvalue;
+    return data;
 }
 
 void NativeWrapper::hal_cpu_relax()
 {
-	abort(); // TODO
+    wait(1, sc_core::SC_MS);
 }
 
 void NativeWrapper::hal_wait_for_irq()
 {
-		if (!interrupt)
-			wait(interrupt_event);
-		interrupt = false;
+    if (interrupt == false) {
+        wait(interrupt_event);
+    }
+
+    interrupt = false;
 }
 
 void NativeWrapper::compute()
 {
-	abort(); // TODO
+    main();
 }
 
 void NativeWrapper::interrupt_handler_internal()
 {
-	interrupt = true;
-	interrupt_event.notify();
+    if (irq.posedge()){
+        interrupt = true;
+        interrupt_event.notify();
+
+        interrupt_handler();
+    }
 }
