@@ -1167,6 +1167,8 @@ int main(void)
 	printf("-- entering main loop --\r\n");
 	while (1) {
 		while (1) {
+            hal_cpu_relax();
+
 			uint32_t d = hal_read32(GPIO_BASEADDR + GPIO_DATA_OFFSET);
 			if (TEST_BIT(d, GPIO_BTN0)) {
 				break;
